@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Container } from 'react-bootstrap';
 import './body.scss';
 
-const Body = ({ buytoken }) => {
+const Body = ({ buyTokenWithToken, buyTokenWithEther }) => {
 
     const [address, setAddress] = useState("");
     const [amount, setAmount] = useState("");
@@ -17,8 +17,12 @@ const Body = ({ buytoken }) => {
     };
     const onclickbuytoken = (e) => {
         e.preventDefault();
-        if (address !== 0 && amount !== 0) buytoken(address, amount);
-        else window.alert("there is error in submission");
+        if (address !== 0 && amount !== 0) {
+            buyTokenWithToken(address, amount);
+        }
+        else if (address == "0x0000000000000000000000000000000000000000")
+            buyTokenWithEther(amount);
+
     };
 
 

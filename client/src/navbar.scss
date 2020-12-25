@@ -83,3 +83,37 @@ $chrome-yellow: #a87119;
   }
 }
 
+
+.container3 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  .box1 {
+    background-color: $dark-blue;
+    width: 350px;
+    padding: 1rem;
+    border-radius: 13px 13px 0 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    .inputBox {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: white;
+      color: black;
+      border-radius: 7px;
+      padding: 0.5rem;
+      margin: 0.5rem;
+    }
+    .dropdown {
+      background-color: $yellow;
+      padding: 0.5rem;
+      color: white;
+      border-radius: 7px;
+      width: 100%;
+    }
+  }
+}

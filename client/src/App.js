@@ -138,7 +138,7 @@ function App() {
         }
     };
 
-    const buytoken = async (_addr, amount) => {
+    const buyTokenWithToken = async (_addr, amount) => {
         setloading(true);
         console.log(amount);
         // if you want to go from eth to wei
@@ -148,7 +148,7 @@ function App() {
         };
         console.log(overrides);
         try {
-            const tx = await presalesm.buyToken(_addr, amount);
+            const tx = await presalesm.buyTokenWithToken(_addr, amount);
             console.log(tx);
             const txsign = await tx.wait();
             window.location.reload();
@@ -157,29 +157,28 @@ function App() {
             console.log(e);
             swal("transaction failed");
         }
+        setloading(false);
+    }
 
-        // setloading(true);
-        // if (_addr === '0x4f96fe3b7a6cf9725f59d353f723c1bdb64ca6aa') {
-
-
-
-        //     await presalesm.methods
-        //         .buyToken(_addr, amount)
-        //         .send({ from: Currentaccount })
-        //         .on("transactionhash", () => {
-        //             console.log("succesfully ran");
-        //         });
-        // }
-
-        // else {
-
-        //     console.log(amount)
-        //     await presalesm.methods
-        //         .buyToken(_addr, amount)
-        //         .send({ from: Currentaccount })
-        //         .on("transactionhash", () => {
-        //             console.log("succesfully ran");
-        //         });
+    const buyTokenWithEther = async (_addr, amount) => {
+        setloading(true);
+        console.log(amount);
+        // if you want to go from eth to wei
+        var x = ethers.utils.parseEther(amount.toString());
+        let overrides = {
+            value: x,
+        };
+        console.log(overrides);
+        try {
+            const tx = await presalesm.buyTokenWithToken(overrides);
+            console.log(tx);
+            const txsign = await tx.wait();
+            window.location.reload();
+        }
+        catch (e) {
+            console.log(e);
+            swal("transaction failed");
+        }
         setloading(false);
     }
 
@@ -390,7 +389,7 @@ function App() {
                                     rate={rate}
                                     claimablebal={claimablebal}
                                 />
-                                <Body contract={presalesm} buytoken={buytoken} />
+                                <Body contract={presalesm} buyTokenWithToken={buyTokenWithToken} buyTokenWithEther={buyTokenWithEther} />
                             </Fragment>
                         )}
                     ></Route>
