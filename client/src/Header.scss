@@ -1,0 +1,35 @@
+$yellow: #ff9f00;
+$light-blue: #1d3856;
+$dark-blue: #102037;
+$chrome-yellow: #a87119;
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  background-color: $light-blue;
+  color: white;
+}
+
+.headerContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  .rightBox {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    .headerButton {
+      background-color: $dark-blue;
+      color: $yellow;
+      min-width: 250px;
+      min-height: 50px;
+      padding: 0.5rem;
+      font-size: 1rem;
+      border-radius: 15px;
+    }
+  }
+}

@@ -1,0 +1,85 @@
+$yellow: #ff9f00;
+$light-blue: #1d3856;
+$dark-blue: #102037;
+$chrome-yellow: #a87119;
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  background-color: $light-blue;
+  color: white;
+}
+
+.homePageContainer {
+  height: 100vh;
+}
+
+.container1 {
+  .box1 {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: left;
+    align-items: center;
+    position: relative;
+    left:85px;
+    top:10px;
+    .name {
+      padding: 0.3rem;
+      border-radius: 13px 0 0 13px;
+      font-size: 1rem;
+      background-color: $yellow;
+    }
+    .value {
+      padding: 0.3rem;
+      border-radius: 0 13px 13px 0;
+      font-size: 1rem;
+      background-color: $dark-blue;
+    }
+  }
+}
+
+.container2 {
+  .flexContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 3rem;
+    .card {
+      background-color: $light-blue;
+      min-height: 170px;
+      min-width: 418px;
+      display: flex;
+      flex-direction: column;
+      padding: 1.3rem;
+      .cardTitle {
+        
+        font-size: 1.5rem;
+        border-radius: 13px 13px 0 0;
+        flex-grow: 1;
+        background-color: $yellow;
+        font-family: Proxima Nova;
+        font-style: normal;
+        font-weight: bold;
+        text-align:center;
+      }
+      .cardContent {
+        border-radius: 0 0 13px 13px;
+        font-size: 1.5rem;
+        flex-grow: 9;
+        background-color: $dark-blue;
+        color: $chrome-yellow;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: Proxima Nova;
+        font-style: normal;
+        font-weight: bold;
+      }
+    }
+  }
+}
+
