@@ -73,8 +73,8 @@ function App() {
             // defining a smart contract ;
             // signer is defined above no need to define again
             // const smartcontract = new Contract( /* address of smart contract*/  , /*  abi of smart contract */, signer);
-            const presale = new Contract("0x226Be01B3e281E1A14De60Dc410502ED1783dB05", presaleabi.abi, signer);
-            const token = new Contract("0x8C1BAb676Ebd9C99a3158A06D8B609dA61D7a15C", tokenabi.abi, signer);
+            const presale = new Contract("0xbBfB604f54f654D359Ef7aE525779d8d32975256", presaleabi.abi, signer);
+            const token = new Contract("0x2dE3d21fb625Da5a13D599193faA5441D63B58fa", tokenabi.abi, signer);
             SetPresalesm(presale);
             setMytoken(token);
 
@@ -95,32 +95,32 @@ function App() {
             //         else
             //             setispresale("Presale is over")
             //     });
-            // await presalesm
-            //     .claimableBal(account)
+            // const bb = async (account) => await presalesm
+            //     .claimable(account)
             //     .then((result) => {
             //         setClaimablebal(ethers.utils.formatUnits(result, 18))
             //         console.log(ethers.utils.formatUnits(result, 18))
 
             //     });
-            // await presalesm
+            // const cc = await presalesm
             //     .getrate()
             //     .then((result) => {
             //         console.log(result);
             //         setRate(result)
             //     })
-            // await mytoken
+            // const dd = await mytoken
             //     .totalSupply()
             //     .then((result) => {
             //         console.log(ethers.utils.formatUnits(result, 18))
             //         settotalsupply(ethers.utils.formatUnits(result, 18));
             //     })
-            // const aa = await mytoken
+            // const hh = async () => await mytoken
             //     .symbol();
-            // setsymbol(aa);
+            // setsymbol(hh);
 
-            // const bb = await mytoken
+            // const kk = async () => await mytoken
             //     .name()
-            // setname(bb);
+            // setname(kk);
 
             // await smartcontract
             //   .functioninsmartcontract(accounts[0].toString())
@@ -160,17 +160,17 @@ function App() {
         setloading(false);
     }
 
-    const buyTokenWithEther = async (_addr, amount) => {
+    const buyTokenWithEther = async (amount) => {
         setloading(true);
-        console.log(amount);
+        console.log(amount.toString());
         // if you want to go from eth to wei
         var x = ethers.utils.parseEther(amount.toString());
         let overrides = {
-            value: x,
+            value: x.toString(),
         };
-        console.log(overrides);
+        console.log(x + "hi");
         try {
-            const tx = await presalesm.buyTokenWithToken(overrides);
+            const tx = await presalesm.buyTokenWithEther(overrides);
             console.log(tx);
             const txsign = await tx.wait();
             window.location.reload();
@@ -297,7 +297,7 @@ function App() {
     const claimableBal = async (_addr) => {
         setloading(true);
         await presalesm
-            .claimableBal(_addr)
+            .claimable(_addr)
             .then((result) => {
                 setClaimablebal(ethers.utils.formatUnits(result, 18))
                 console.log(ethers.utils.formatUnits(result, 18))
@@ -339,15 +339,16 @@ function App() {
     };
 
     const walletAddress = async () => {
-        await window.ethereum.request({
-            method: "eth_requestAccounts",
-            params: [
-                {
-                    eth_accounts: {},
-                },
-            ],
-        });
-        window.location.reload();
+
+        const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+        console.log(accounts);
+        if (accounts.length == 0) {
+            return;
+        }
+
+        setAccount(accounts[0]);
+        loadBlockchainData();
+
     };
 
     useEffect(() => {
