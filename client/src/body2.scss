@@ -12,47 +12,6 @@ $chrome-yellow: #a87119;
   background-color: $light-blue;
   color: white;
 }
-.cc2{
-    position: relative;
-    left:345px;
-    width: 553px;
-    height: 125px;
-    top:100px;
-    background: #212429;
-    border-radius: 20px;
-    margin:40px;
-    
-
-
-}
-.buttons{
-    width:200px;
-    left:170px;
-    top:30px;
-    background: #1B2E47;
-border-radius: 10px;
-font-family: Proxima Nova;
-font-style: normal;
-font-weight: bold;
-font-size: 18px;
-line-height: 22px;
-border-color: #1B2E47;
-color: #C69000;
-}
-.inputs{
-    position: relative;
-    top:30px;
-    left:130px;
-    width:300px;
-    background: #FFFFFF;
-border-radius: 10px;
-}
-.main{
-    position: relative;
-    background-color: #1D3755;
-    height:1800px;
-    
-}
 
 .container3 {
     display: flex;
@@ -61,8 +20,7 @@ border-radius: 10px;
     justify-content: center;
     padding: 1.5rem;
     flex-wrap: wrap;
-    position:relative;
-    bottom: 170px;
+  
     border-collapse: separate;
     border-spacing: 15px;
     .box1 {

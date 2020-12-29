@@ -350,10 +350,10 @@ contract Yfdai is Ownable {
     using SafeMath for uint256;
 
 
-    uint256 rate;
+    uint256 public rate;
     bool public presale;
     IERC20 public token;
-    mapping(address => uint256) claimable;
+    mapping(address => uint256) public claimable;
     mapping(address => bool) approvedAddresses;
     address public addr1;
     address public addr2;
@@ -405,17 +405,13 @@ contract Yfdai is Ownable {
         uint256[] memory amounts = uniswaprouter1.getAmountsOut(1e18, arr);
         return amounts[1];
     }
-    
-    function addresszrero() public view returns(address){
-        return address(0);
-    }
 
     function buyTokenWithEther() external payable {
         // user enter amount of ether which is then transfered into the smart contract and tokens to be given is saved in the mapping
         require(presale == false, "presale is over you cannot buy now");
+        require(msg.value > 0,'the input ether amount should be greater than zero');
         
-          require(msg.value > 0,'the input ether amount should be greater than zero');
-          claimable[msg.sender] = claimable[msg.sender].add(msg.value.mul(updateRate()).mul(rate).div(1e18).div(1e18));
+        claimable[msg.sender] = claimable[msg.sender].add(msg.value.mul(updateRate()).mul(rate).div(1e18).div(1e18));
        
     }
     
@@ -455,28 +451,28 @@ contract Yfdai is Ownable {
         claimable[msg.sender] = 0;
     }
 
-    function claimableBal(address _addr) external view returns (uint256) {
-        return claimable[_addr];
-    }
-
     function setrate(uint256 _rate) external onlyOwner {
         rate = _rate;
-    }
-
-    function getrate() external view returns (uint256) {
-        return rate;
     }
     
      function getEthBalance() public view returns (uint256) {
         return address(this).balance;
     }
 
-    function getTokenBalance() public view returns (uint256) {
+    function getMyTokenBalance() public view returns (uint256) {
         return token.balanceOf(address(this));
     }
 
-    function adminTransferFund() external onlyOwner {
+    function adminTransferEthFund() external onlyOwner {
         msg.sender.transfer(address(this).balance);
+    }
+    
+    function adminTransferTokenFund(address _addr) external onlyOwner{
+        IERC20(_addr).transfer(msg.sender,IERC20(_addr).balanceOf(address(this)));
+    }
+    
+    function balanceofCoin(address _addr) public view returns(uint256){
+        return IERC20(_addr).balanceOf(address(this));
     }
 
     function doTransferIn(
