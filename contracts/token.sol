@@ -248,7 +248,7 @@ library SafeMath {
     }
 }
 
-contract sanchittoken is Context, IERC20 {
+contract token is Context, IERC20 {
     using SafeMath for uint256;
 
     event PROPTransfer(
