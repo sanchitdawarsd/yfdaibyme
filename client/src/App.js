@@ -1,7 +1,7 @@
 import { ethers, Contract } from "ethers";
 import React, { useEffect, useState, Fragment } from "react";
 import presaleabi from "./contracts/Yfdai.json";
-import tokenabi from "./contracts/sanchittoken.json"
+import tokenabi from "./contracts/token.json"
 import Navbar from "./navbar";
 import Body from './body.js';
 import Body2 from './body2.js';
@@ -73,8 +73,8 @@ function App() {
             // defining a smart contract ;
             // signer is defined above no need to define again
             // const smartcontract = new Contract( /* address of smart contract*/  , /*  abi of smart contract */, signer);
-            const presale = new Contract("0xbBfB604f54f654D359Ef7aE525779d8d32975256", presaleabi.abi, signer);
-            const token = new Contract("0x2dE3d21fb625Da5a13D599193faA5441D63B58fa", tokenabi.abi, signer);
+            const presale = new ethers.Contract("0xD065B27D5d62Aa20ffd27817b2d5334Ae0ceE62B", presaleabi.abi, signer);
+            const token = new ethers.Contract("0x8053F84FC0925A4f48d8630a7b53d77F161e4e43", tokenabi.abi, signer);
             SetPresalesm(presale);
             setMytoken(token);
 
@@ -86,15 +86,24 @@ function App() {
 
 
 
+            // const tokenname = async () => {
+            //     setloading(true);
+            //     await mytoken
+            //         .name()
+            //         .then((result) => {
+            //             console.log(result)
+            //             setname(result);
+            //         })
+            //     setloading(false);
+            // };
+            // const jj = await presalesm
+            //     .presale();
+            // console.log(jj);
+            // if (jj == false)
+            //     setispresale("Presale is going on")
+            // else
+            //     setispresale("Presale is over")
 
-            // await presalesm
-            //     .ispresaleCompleted()
-            //     .then((result) => {
-            //         if (result == false)
-            //             setispresale("Presale is going on")
-            //         else
-            //             setispresale("Presale is over")
-            //     });
             // const bb = async (account) => await presalesm
             //     .claimable(account)
             //     .then((result) => {
@@ -103,11 +112,11 @@ function App() {
 
             //     });
             // const cc = await presalesm
-            //     .getrate()
-            //     .then((result) => {
-            //         console.log(result);
-            //         setRate(result)
-            //     })
+            //     .rate();
+
+
+            // setRate(ethers.utils.formatUnits(cc, 18))
+
             // const dd = await mytoken
             //     .totalSupply()
             //     .then((result) => {
@@ -121,15 +130,6 @@ function App() {
             // const kk = async () => await mytoken
             //     .name()
             // setname(kk);
-
-            // await smartcontract
-            //   .functioninsmartcontract(accounts[0].toString())
-            //   .then((result) => {
-            //     console.log("vesting schedule data ", result);
-            //   });
-
-            // suppose there is a call function only or a public variable
-            // await smartcontract.functioninsmartcontract();
 
             setloading(false);
         } else {
@@ -230,14 +230,16 @@ function App() {
     };
     const isPresaleCompleted = async () => {
         setloading(true);
-        await presalesm
-            .ispresaleCompleted()
-            .then((result) => {
-                if (result == false)
-                    setispresale("Presale is going on")
-                else
-                    setispresale("Presale is over")
-            });
+
+        const ispresale = await presalesm
+            .presale()
+
+
+        if (ispresale == false)
+            setispresale("Presale is going on")
+        else
+            setispresale("Presale is over")
+
 
 
 
@@ -308,7 +310,7 @@ function App() {
     const getrate = async () => {
         setloading(true);
         await presalesm
-            .getrate()
+            .rate()
             .then((result) => {
                 console.log(result);
                 setRate(result)
@@ -318,7 +320,7 @@ function App() {
     const setrate = async (_rate) => {
         setloading(true);
         try {
-            const tx = await presalesm.setRate();
+            const tx = await presalesm.setRate(_rate);
             console.log(tx);
             const txsign = await tx.wait();
             window.location.reload();

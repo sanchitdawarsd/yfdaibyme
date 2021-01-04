@@ -1,10 +1,10 @@
 const path = require("path");
 const fs = require("fs");
-// const secrets = JSON.parse(fs.readFileSync(".secrets.json").toString().trim());
-const PRIVATE_KEY = "";
-const INFURA_KEY = "";
+//const secrets = JSON.parse(fs.readFileSync(".secrets.json").toString().trim());
+const PRIVATE_KEY = "0x00b538aaf1788147d5dfb07a6204d4d30bd01fa24222e4d791bfbd619a9d3b46";
+const INFURA_KEY = "https://kovan.infura.io/v3/0904265ada8344fd937e816ad920a40b";
 const ROPSTEN_KEY = "";
-// const provider = require("@truffle/hdwallet-provider");
+const provider = require("@truffle/hdwallet-provider");
 
 module.exports = {
   /**
@@ -41,7 +41,7 @@ module.exports = {
     },
     development: {
       host: "127.0.0.1", // Localhost (default: none)
-      port: 7545, // Standard Ethereum port (default: none)
+      port: 8545, // Standard Ethereum port (default: none)
       network_id: "*", // Any network (default: none)
     },
     // Another network with more advanced options...
