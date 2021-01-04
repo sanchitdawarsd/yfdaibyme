@@ -380,10 +380,6 @@ contract Yfdai is Ownable {
         _;
     }
 
-    function ispresaleCompleted() public view returns (bool) {
-        if (presale == false) return false;
-        else return true;
-    }
 
     function endPresale() external onlyOwner returns (bool) {
         presale = true;
