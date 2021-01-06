@@ -429,14 +429,6 @@ contract Yfdai is Ownable {
         approvedAddresses[_addr] = true;
     }
 
-    function isTokenListed(address _addr) external view returns (bool) {
-        if (approvedAddresses[_addr] == true){ 
-            return true;
-        }else {
-            return false;
-        }
-    }
-
     function claim() external isPresaleOver {
         // check uint in claimable mapping for msg.sender and transfer erc20 to msg.sender
         require(
@@ -455,20 +447,21 @@ contract Yfdai is Ownable {
         return address(this).balance;
     }
 
-    function getMyTokenBalance() public view returns (uint256) {
-        return token.balanceOf(address(this));
-    }
-
     function adminTransferEthFund() external onlyOwner {
         msg.sender.transfer(address(this).balance);
     }
     
-    function adminTransferTokenFund(address _addr) external onlyOwner{
-        IERC20(_addr).transfer(msg.sender,IERC20(_addr).balanceOf(address(this)));
+    function getContractTokenBalance(IERC20 _token) public view returns (uint256) {
+        return _token.balanceOf(address(this));
     }
     
-    function balanceofCoin(address _addr) public view returns(uint256){
-        return IERC20(_addr).balanceOf(address(this));
+    function getContractNonErc20Balance(INonStandardERC20 _token) public view returns (uint256) {
+        return _token.balanceOf(address(this));
+    }
+    
+    function fundsWithdrawal(IERC20 _token,uint256 value) external onlyOwner{
+        require(getContractTokenBalance(_token) >= value,'the contract doesnt have tokens'); 
+        _token.transfer(msg.sender,value);  
     }
 
     function doTransferIn(
