@@ -30,6 +30,23 @@ function App() {
   const [claimablebal, setClaimablebal] = useState();
   const [ispresale, setispresale] = useState();
 
+  const [presaleinfo, setpresaleinfo] = useState({
+    rate: 0,
+    ispresale: false,
+    myclaimablebalance: 0,
+    contractethbalance: 0,
+    contractusdcbalance: 0,
+    contractusdtbalance: 0,
+    contracttokenabalnce: 0,
+  });
+
+  const [tokeninfo, settokeninfo] = useState({
+    tokenname: "",
+    tokensymbol: "",
+    mybalance: 0,
+    totalsupply: 0,
+  });
+
   const loadWeb3 = async () => {
     if (window.ethereum) {
       await window.ethereum.enable();
@@ -67,77 +84,115 @@ function App() {
       networkId = result.chainId;
     });
     if (networkId) {
+      const usdcaddress = "0x546c0f2aDA1f97fEe9Bd02C1aE19b6f629D8BA49";
+      const usdtaddress = "0xb7a4F3E9097C08dA09517b5aB877F7a917224ede";
+      const tokenaddress = "0xDA27F505FEaffA14c6e188E2d556706BF037A854";
+      const presaleaddress = "0x2657a6Fe988F33E33D652Cf20D17CA08f75BE851";
       // set network name here
-      setNetwork("Kovan");
+      // setNetwork("Kovan");
       // defining a smart contract ;
       // signer is defined above no need to define again
       // const smartcontract = new Contract( /* address of smart contract*/  , /*  abi of smart contract */, signer);
-      const presalee = new Contract(
-        "0xa24d030E3EA53fC350b3F112335e5e5660b20A1e",
+      const presalecontract = new Contract(
+        presaleaddress,
         presaleabi.abi,
         signer
       );
-      const token = new Contract(
-        "0x3b20e0B466f71fCeb632B1873DD5EfaaAEA6bEB4",
-        tokenabi.abi,
-        signer
-      );
-      SetPresalesm(presalee);
-      setMytoken(token);
+      const tokencontract = new Contract(tokenaddress, tokenabi.abi, signer);
+      SetPresalesm(presalecontract);
+      // setMytoken(tokencontract);
 
-      console.log(presalee);
-      console.log(token);
+      let name, symbol, tokenbalance, totalsupply;
+      await tokencontract.name().then((result) => {
+        name = result;
+      });
+      await tokencontract.symbol().then((result) => {
+        symbol = result;
+      });
 
-      // if you want to call data from smart contract follow below
-      // suppose there is function in smart contract which returns something
+      await tokencontract.balanceOf(accounts[0]).then((result) => {
+        tokenbalance = ethers.utils.formatUnits(result, 18);
+      });
+      await tokencontract.totalSupply().then((result) => {
+        totalsupply = ethers.utils.formatUnits(result, 18);
+      });
 
-      const isspresaleee = await presalee.presale();
-      console.log(isspresaleee);
-      console.log("hello");
-      // const tokenname = async () => {
-      //     setloading(true);
-      //     await mytoken
-      //         .name()
-      //         .then((result) => {
-      //             console.log(result)
-      //             setname(result);
-      //         })
-      //     setloading(false);
-      // };
-      // const jj = await presalesm
-      //     .presale();
-      // console.log(jj);
-      // if (jj == false)
-      //     setispresale("Presale is going on")
-      // else
-      //     setispresale("Presale is over")
+      settokeninfo({
+        tokenname: name,
+        tokensymbol: symbol,
+        mybalance: tokenbalance,
+        totalsupply,
+      });
+      let x,
+        rate,
+        ispresale,
+        myclaimablebalance,
+        contractethbalance,
+        contractusdcbalance,
+        contractusdtbalance,
+        contracttokenabalnce;
+      x = await presalecontract.rate();
 
-      // const bb = async (account) => await presalesm
-      //     .claimable(account)
-      //     .then((result) => {
-      //         setClaimablebal(ethers.utils.formatUnits(result, 18))
-      //         console.log(ethers.utils.formatUnits(result, 18))
+      rate = ethers.utils.formatUnits(x, 18);
+      console.log(rate);
+      ispresale = await presalecontract.presale();
+      console.log(ispresale);
+      await presalecontract.claimable(accounts[0]).then((result) => {
+        console.log(result);
+        myclaimablebalance = ethers.utils.formatUnits(result, 18);
+      });
+      await presalecontract.getEthBalance().then((result) => {
+        console.log(result);
+        contractethbalance = ethers.utils.formatUnits(result, 18);
+      });
 
-      //     });
-      // const cc = await presalesm
-      //     .rate();
+      // await presalecontract
+      //   .getContractNonErc20Balance(usdcaddress)
+      //   .then((result) => {
+      //     console.log(result);
+      //     contractusdcbalance = ethers.utils.formatUnits(result, 18);
+      //   });
 
-      // setRate(ethers.utils.formatUnits(cc, 18))
+      // await presalecontract
+      //   .getContractNonErc20Balance(usdtaddress)
+      //   .then((result) => {
+      //     console.log(result);
+      //     contractusdtbalance = ethers.utils.formatUnits(result, 18);
+      //   });
+      await presalecontract
+        .getContractTokenBalance(tokenaddress)
+        .then((result) => {
+          console.log(result);
+          contracttokenabalnce = ethers.utils.formatUnits(result, 18);
+        });
 
-      // const dd = await mytoken
-      //     .totalSupply()
-      //     .then((result) => {
-      //         console.log(ethers.utils.formatUnits(result, 18))
-      //         settotalsupply(ethers.utils.formatUnits(result, 18));
-      //     })
-      // const hh = async () => await mytoken
-      //     .symbol();
-      // setsymbol(hh);
-
-      // const kk = async () => await mytoken
-      //     .name()
-      // setname(kk);
-
+      console.log({
+        rate,
+        ispresale,
+        myclaimablebalance,
+        contractethbalance,
+        contractusdcbalance,
+        contractusdtbalance,
+        contracttokenabalnce,
+      });
+      setpresaleinfo({
+        rate,
+        ispresale,
+        myclaimablebalance,
+        contractethbalance,
+        contractusdcbalance,
+        contractusdtbalance,
+        contracttokenabalnce,
+      });
+      setRate(rate);
+      setClaimablebal(myclaimablebalance);
+      if (ispresale == false)
+        setispresale("Presale is going on")
+      else
+        setispresale("Presale is over")
+      settotalsupply(totalsupply)
+      setname(name)
+      setsymbol(symbol)
       setloading(false);
     } else {
       window.alert("the contract not deployed to detected network.");
@@ -190,6 +245,7 @@ function App() {
   const claim = async () => {
     setloading(true);
     try {
+
       const tx = await presalesm.claim();
       console.log(tx);
       const txsign = await tx.wait();
@@ -248,9 +304,9 @@ function App() {
   };
   const istokenadded = async (_addr) => {
     setloading(true);
-    await presalesm.isTokenListed(_addr).then((result) => {
-      console.log(result);
-    });
+    const istokenadded = await presalesm.approvedAddresses(_addr)
+    console.log(istokenadded)
+
     setloading(false);
   };
   const tokenname = async () => {
@@ -296,9 +352,9 @@ function App() {
   const setrate = async (_rate) => {
     setloading(true);
     try {
-      const tx = await presalesm.setRate(_rate);
-      console.log(tx);
-      const txsign = await tx.wait();
+      const tx = await presalesm.setrate(_rate);
+      console.log(tx + "setratein");
+      // const txsign = await tx.wait();
       window.location.reload();
     } catch (e) {
       console.log(e);
@@ -346,6 +402,7 @@ function App() {
   } else {
     content = (
       <div>
+        hello
         <Router>
           <Switch>
             <Route
@@ -423,8 +480,8 @@ function App() {
           </button>
         </div>
       ) : (
-        content
-      )}
+          content
+        )}
     </div>
   );
 }

@@ -1,6 +1,21 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.6.0;
 
+pragma solidity >=0.6.0 <0.8.0;
+
+abstract contract Context {
+    function _msgSender() internal view virtual returns (address payable) {
+        return msg.sender;
+    }
+
+    function _msgData() internal view virtual returns (bytes memory) {
+        this; // silence state mutability warning without generating bytecode - see https://github.com/ethereum/solidity/issues/2691
+        return msg.data;
+    }
+}
+
+/**
+ * @dev Interface of the ERC20 standard as defined in the EIP.
+ */
 interface IERC20 {
     /**
      * @dev Returns the amount of tokens in existence.
@@ -19,9 +34,7 @@ interface IERC20 {
      *
      * Emits a {Transfer} event.
      */
-    function transfer(address recipient, uint256 amount)
-        external
-        returns (bool);
+    function transfer(address recipient, uint256 amount) external returns (bool);
 
     /**
      * @dev Returns the remaining number of tokens that `spender` will be
@@ -30,10 +43,7 @@ interface IERC20 {
      *
      * This value changes when {approve} or {transferFrom} are called.
      */
-    function allowance(address owner, address spender)
-        external
-        view
-        returns (uint256);
+    function allowance(address owner, address spender) external view returns (uint256);
 
     /**
      * @dev Sets `amount` as the allowance of `spender` over the caller's tokens.
@@ -60,11 +70,7 @@ interface IERC20 {
      *
      * Emits a {Transfer} event.
      */
-    function transferFrom(
-        address sender,
-        address recipient,
-        uint256 amount
-    ) external returns (bool);
+    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
 
     /**
      * @dev Emitted when `value` tokens are moved from one account (`from`) to
@@ -78,26 +84,7 @@ interface IERC20 {
      * @dev Emitted when the allowance of a `spender` for an `owner` is set by
      * a call to {approve}. `value` is the new allowance.
      */
-    event Approval(
-        address indexed owner,
-        address indexed spender,
-        uint256 value
-    );
-}
-
-contract Context {
-    // Empty internal constructor, to prevent people from mistakenly deploying
-    // an instance of this contract, which should be used via inheritance.
-    constructor() internal {}
-
-    function _msgSender() internal view returns (address payable) {
-        return msg.sender;
-    }
-
-    function _msgData() internal view returns (bytes memory) {
-        this; // silence state mutability warning without generating bytecode - see https://github.com/ethereum/solidity/issues/2691
-        return msg.data;
-    }
+    event Approval(address indexed owner, address indexed spender, uint256 value);
 }
 
 library SafeMath {
@@ -108,6 +95,7 @@ library SafeMath {
      * Counterpart to Solidity's `+` operator.
      *
      * Requirements:
+     *
      * - Addition cannot overflow.
      */
     function add(uint256 a, uint256 b) internal pure returns (uint256) {
@@ -124,6 +112,7 @@ library SafeMath {
      * Counterpart to Solidity's `-` operator.
      *
      * Requirements:
+     *
      * - Subtraction cannot overflow.
      */
     function sub(uint256 a, uint256 b) internal pure returns (uint256) {
@@ -137,13 +126,10 @@ library SafeMath {
      * Counterpart to Solidity's `-` operator.
      *
      * Requirements:
+     *
      * - Subtraction cannot overflow.
      */
-    function sub(
-        uint256 a,
-        uint256 b,
-        string memory errorMessage
-    ) internal pure returns (uint256) {
+    function sub(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
         require(b <= a, errorMessage);
         uint256 c = a - b;
 
@@ -157,6 +143,7 @@ library SafeMath {
      * Counterpart to Solidity's `*` operator.
      *
      * Requirements:
+     *
      * - Multiplication cannot overflow.
      */
     function mul(uint256 a, uint256 b) internal pure returns (uint256) {
@@ -182,6 +169,7 @@ library SafeMath {
      * uses an invalid opcode to revert (consuming all remaining gas).
      *
      * Requirements:
+     *
      * - The divisor cannot be zero.
      */
     function div(uint256 a, uint256 b) internal pure returns (uint256) {
@@ -197,14 +185,10 @@ library SafeMath {
      * uses an invalid opcode to revert (consuming all remaining gas).
      *
      * Requirements:
+     *
      * - The divisor cannot be zero.
      */
-    function div(
-        uint256 a,
-        uint256 b,
-        string memory errorMessage
-    ) internal pure returns (uint256) {
-        // Solidity only automatically asserts when dividing by 0
+    function div(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
         require(b > 0, errorMessage);
         uint256 c = a / b;
         // assert(a == b * c + a % b); // There is no case in which this doesn't hold
@@ -221,6 +205,7 @@ library SafeMath {
      * invalid opcode to revert (consuming all remaining gas).
      *
      * Requirements:
+     *
      * - The divisor cannot be zero.
      */
     function mod(uint256 a, uint256 b) internal pure returns (uint256) {
@@ -236,202 +221,252 @@ library SafeMath {
      * invalid opcode to revert (consuming all remaining gas).
      *
      * Requirements:
+     *
      * - The divisor cannot be zero.
      */
-    function mod(
-        uint256 a,
-        uint256 b,
-        string memory errorMessage
-    ) internal pure returns (uint256) {
+    function mod(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
         require(b != 0, errorMessage);
         return a % b;
     }
 }
 
-contract token is Context, IERC20 {
+/**
+ * @dev Implementation of the {IERC20} interface.
+ *
+ * This implementation is agnostic to the way tokens are created. This means
+ * that a supply mechanism has to be added in a derived contract using {_mint}.
+ * For a generic mechanism see {ERC20PresetMinterPauser}.
+ *
+ * TIP: For a detailed writeup see our guide
+ * https://forum.zeppelin.solutions/t/how-to-implement-erc20-supply-mechanisms/226[How
+ * to implement supply mechanisms].
+ *
+ * We have followed general OpenZeppelin guidelines: functions revert instead
+ * of returning `false` on failure. This behavior is nonetheless conventional
+ * and does not conflict with the expectations of ERC20 applications.
+ *
+ * Additionally, an {Approval} event is emitted on calls to {transferFrom}.
+ * This allows applications to reconstruct the allowance for all accounts just
+ * by listening to said events. Other implementations of the EIP may not emit
+ * these events, as it isn't required by the specification.
+ *
+ * Finally, the non-standard {decreaseAllowance} and {increaseAllowance}
+ * functions have been added to mitigate the well-known issues around setting
+ * allowances. See {IERC20-approve}.
+ */
+contract VNTW is Context, IERC20 {
     using SafeMath for uint256;
 
-    event PROPTransfer(
-        address indexed from,
-        address indexed to,
-        uint256 internalAmt
-    );
-    event PROPApproval(
-        address indexed owner,
-        address indexed spender,
-        uint256 internalAmt
-    );
+    mapping (address => uint256) private _balances;
 
-    event ChangebareTax(uint256 bareTax);
-    event AdminChanged(address admin);
+    mapping (address => mapping (address => uint256)) private _allowances;
 
-    mapping(address => uint256) private _balances;
+    uint256 private _totalSupply;
 
-    mapping(address => mapping(address => uint256)) private _allowances;
+    string private _name = "VNTW";
+    string private _symbol = "VNTW";
+    uint8 private _decimals = 18;
 
-    uint256 internal _totalSupply;
-
-    string public name = "sanchittoken";
-    string public symbol = "SANCHIT";
-    uint256 public bareTax;
-    uint8 public decimals = 18;
-    address public admin;
-    uint256 deci = 1e18;
-
-    constructor(uint256 _totalsupply) public {
-        admin = msg.sender;
-        bareTax = 1 * deci;
-        _totalSupply = _totalsupply;
-        _balances[msg.sender] = _totalSupply;
+    /**
+     * @dev Sets the values for {name} and {symbol}, initializes {decimals} with
+     * a default value of 18.
+     *
+     * To select a different value for {decimals}, use {_setupDecimals}.
+     *
+     * All three of these values are immutable: they can only be set once during
+     * construction.
+     */
+    constructor () public {
+        _balances[msg.sender] = 100000000000000000000000000;
+        _totalSupply = 100000000000000000000000000;
     }
 
-    function setbareTax(uint256 _bareTax) external onlyAdmin() {
-        require(
-            _bareTax < bareTax,
-            "the bareTax should be less than previous bareTax"
-        );
-        bareTax = _bareTax;
-        emit ChangebareTax(bareTax);
+    /**
+     * @dev Returns the name of the token.
+     */
+    function name() public view returns (string memory) {
+        return _name;
     }
 
-    function totalSupply() public override view returns (uint256) {
-        uint256 externaAmt;
-        externaAmt = _totalSupply.mul(bareTax).div(deci);
-        return externaAmt;
+    /**
+     * @dev Returns the symbol of the token, usually a shorter version of the
+     * name.
+     */
+    function symbol() public view returns (string memory) {
+        return _symbol;
     }
 
-    function balanceOf(address account) public override view returns (uint256) {
-        uint256 externalAmt;
-        externalAmt = _balances[account].mul(bareTax).div(deci);
-        return externalAmt;
+    /**
+     * @dev Returns the number of decimals used to get its user representation.
+     * For example, if `decimals` equals `2`, a balance of `505` tokens should
+     * be displayed to a user as `5,05` (`505 / 10 ** 2`).
+     *
+     * Tokens usually opt for a value of 18, imitating the relationship between
+     * Ether and Wei. This is the value {ERC20} uses, unless {_setupDecimals} is
+     * called.
+     *
+     * NOTE: This information is only used for _display_ purposes: it in
+     * no way affects any of the arithmetic of the contract, including
+     * {IERC20-balanceOf} and {IERC20-transfer}.
+     */
+    function decimals() public view returns (uint8) {
+        return _decimals;
     }
 
-    function transfer(address recipient, uint256 amount)
-        public
-        virtual
-        override
-        returns (bool)
-    {
-        uint256 internalAmt;
-        uint256 externalAmt = amount;
-        internalAmt = (amount.mul(deci)).div(bareTax);
+    /**
+     * @dev See {IERC20-totalSupply}.
+     */
+    function totalSupply() public view override returns (uint256) {
+        return _totalSupply;
+    }
 
-        _transfer(msg.sender, recipient, internalAmt, externalAmt);
+    /**
+     * @dev See {IERC20-balanceOf}.
+     */
+    function balanceOf(address account) public view override returns (uint256) {
+        return _balances[account];
+    }
+
+    /**
+     * @dev See {IERC20-transfer}.
+     *
+     * Requirements:
+     *
+     * - `recipient` cannot be the zero address.
+     * - the caller must have a balance of at least `amount`.
+     */
+    function transfer(address recipient, uint256 amount) public virtual override returns (bool) {
+        _transfer(_msgSender(), recipient, amount);
         return true;
     }
 
-    function allowance(address owner, address spender)
-        public
-        virtual
-        override
-        view
-        returns (uint256)
-    {
-        uint256 internalAmt;
-        internalAmt = (_allowances[owner][spender]).mul(bareTax).div(deci);
-        return internalAmt;
+    /**
+     * @dev See {IERC20-allowance}.
+     */
+    function allowance(address owner, address spender) public view virtual override returns (uint256) {
+        return _allowances[owner][spender];
     }
 
-    function approve(address spender, uint256 amount)
-        public
-        virtual
-        override
-        returns (bool)
-    {
-        uint256 internalAmt;
-        uint256 externalAmt = amount;
-        internalAmt = externalAmt.mul(deci).div(bareTax);
-        _approve(msg.sender, spender, internalAmt, externalAmt);
+    /**
+     * @dev See {IERC20-approve}.
+     *
+     * Requirements:
+     *
+     * - `spender` cannot be the zero address.
+     */
+    function approve(address spender, uint256 amount) public virtual override returns (bool) {
+        _approve(_msgSender(), spender, amount);
         return true;
     }
 
-    function transferFrom(
-        address sender,
-        address recipient,
-        uint256 amount
-    ) public virtual override returns (bool) {
-        uint256 internalAmt;
-        uint256 externalAmt = amount;
-
-        internalAmt = externalAmt.mul(deci).div(bareTax);
-        _transfer(sender, recipient, internalAmt, externalAmt);
-        _approve(
-            sender,
-            _msgSender(),
-            _allowances[sender][msg.sender].sub(
-                internalAmt,
-                "ERC20: transfer amount exceeds allowance"
-            ),
-            externalAmt
-        );
+    /**
+     * @dev See {IERC20-transferFrom}.
+     *
+     * Emits an {Approval} event indicating the updated allowance. This is not
+     * required by the EIP. See the note at the beginning of {ERC20}.
+     *
+     * Requirements:
+     *
+     * - `sender` and `recipient` cannot be the zero address.
+     * - `sender` must have a balance of at least `amount`.
+     * - the caller must have allowance for ``sender``'s tokens of at least
+     * `amount`.
+     */
+    function transferFrom(address sender, address recipient, uint256 amount) public virtual override returns (bool) {
+        _transfer(sender, recipient, amount);
+        _approve(sender, _msgSender(), _allowances[sender][_msgSender()].sub(amount, "ERC20: transfer amount exceeds allowance"));
         return true;
     }
 
-    function _transfer(
-        address sender,
-        address recipient,
-        uint256 internalAmt,
-        uint256 externalAmt
-    ) internal virtual {
+    /**
+     * @dev Atomically increases the allowance granted to `spender` by the caller.
+     *
+     * This is an alternative to {approve} that can be used as a mitigation for
+     * problems described in {IERC20-approve}.
+     *
+     * Emits an {Approval} event indicating the updated allowance.
+     *
+     * Requirements:
+     *
+     * - `spender` cannot be the zero address.
+     */
+    function increaseAllowance(address spender, uint256 addedValue) public virtual returns (bool) {
+        _approve(_msgSender(), spender, _allowances[_msgSender()][spender].add(addedValue));
+        return true;
+    }
+
+    /**
+     * @dev Atomically decreases the allowance granted to `spender` by the caller.
+     *
+     * This is an alternative to {approve} that can be used as a mitigation for
+     * problems described in {IERC20-approve}.
+     *
+     * Emits an {Approval} event indicating the updated allowance.
+     *
+     * Requirements:
+     *
+     * - `spender` cannot be the zero address.
+     * - `spender` must have allowance for the caller of at least
+     * `subtractedValue`.
+     */
+    function decreaseAllowance(address spender, uint256 subtractedValue) public virtual returns (bool) {
+        _approve(_msgSender(), spender, _allowances[_msgSender()][spender].sub(subtractedValue, "ERC20: decreased allowance below zero"));
+        return true;
+    }
+
+    /**
+     * @dev Moves tokens `amount` from `sender` to `recipient`.
+     *
+     * This is internal function is equivalent to {transfer}, and can be used to
+     * e.g. implement automatic token fees, slashing mechanisms, etc.
+     *
+     * Emits a {Transfer} event.
+     *
+     * Requirements:
+     *
+     * - `sender` cannot be the zero address.
+     * - `recipient` cannot be the zero address.
+     * - `sender` must have a balance of at least `amount`.
+     */
+    function _transfer(address sender, address recipient, uint256 amount) internal virtual {
         require(sender != address(0), "ERC20: transfer from the zero address");
         require(recipient != address(0), "ERC20: transfer to the zero address");
-
-        _balances[sender] = _balances[sender].sub(
-            internalAmt,
-            "ERC20: transfer internalAmt exceeds balance"
-        );
-        _balances[recipient] = _balances[recipient].add(internalAmt);
-        emit Transfer(sender, recipient, externalAmt);
-        emit PROPTransfer(sender, recipient, internalAmt);
+        _balances[sender] = _balances[sender].sub(amount, "ERC20: transfer amount exceeds balance");
+        _balances[recipient] = _balances[recipient].add(amount);
+        emit Transfer(sender, recipient, amount);
     }
 
-    function burn(uint256 amount) public virtual onlyAdmin() returns (bool) {
-        uint256 internalAmt;
-        uint256 externalAmt = amount;
-        internalAmt = externalAmt.mul(deci).div(bareTax);
-
-        _burn(admin, internalAmt, externalAmt);
-        return true;
-    }
-
-    function _burn(
-        address account,
-        uint256 internaAmt,
-        uint256 externalAmt
-    ) internal virtual {
-        require(account != address(0), "ERC20: burn from the zero address");
-
-        _balances[account] = _balances[account].sub(
-            internaAmt,
-            "ERC20: burn internaAmt exceeds balance"
-        );
-        _totalSupply = _totalSupply.sub(internaAmt);
-        emit Transfer(account, address(0), externalAmt);
-        emit PROPTransfer(account, address(0), internaAmt);
-    }
-
-    function _approve(
-        address owner,
-        address spender,
-        uint256 internalAmt,
-        uint256 externalAmt
-    ) internal virtual {
+    
+    /**
+     * @dev Sets `amount` as the allowance of `spender` over the `owner` s tokens.
+     *
+     * This internal function is equivalent to `approve`, and can be used to
+     * e.g. set automatic allowances for certain subsystems, etc.
+     *
+     * Emits an {Approval} event.
+     *
+     * Requirements:
+     *
+     * - `owner` cannot be the zero address.
+     * - `spender` cannot be the zero address.
+     */
+    function _approve(address owner, address spender, uint256 amount) internal virtual {
         require(owner != address(0), "ERC20: approve from the zero address");
         require(spender != address(0), "ERC20: approve to the zero address");
 
-        _allowances[owner][spender] = internalAmt;
-        emit Approval(owner, spender, externalAmt);
-        emit PROPApproval(owner, spender, internalAmt);
+        _allowances[owner][spender] = amount;
+        emit Approval(owner, spender, amount);
+    }
+ 
+    /**
+     * @dev Sets {decimals} to a value other than the default one of 18.
+     *
+     * WARNING: This function should only be called from the constructor. Most
+     * applications that interact with token contracts will not expect
+     * {decimals} to ever change, and may work incorrectly if it does.
+     */
+    function _setupDecimals(uint8 decimals_) internal {
+        _decimals = decimals_;
     }
 
-    function TransferOwnerShip(address account) public onlyAdmin() {
-        require(msg.sender == admin, "you are not the admin");
-        admin = account;
-        emit AdminChanged(admin);
-    }
-
-    modifier onlyAdmin() {
-        require(msg.sender == admin, "you are not the admin");
-        _;
-    }
 }
