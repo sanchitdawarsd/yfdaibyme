@@ -1,6 +1,5 @@
 pragma solidity ^0.6.2;
 
-
 interface IUniswapV2Router01 {
     function factory() external pure returns (address);
 
@@ -160,7 +159,6 @@ interface IUniswapV2Router01 {
         returns (uint256[] memory amounts);
 }
 
-
 abstract contract Context {
     function _msgSender() internal virtual view returns (address payable) {
         return msg.sender;
@@ -286,7 +284,8 @@ library SafeMath {
 
         return c;
     }
-     function div(uint256 a, uint256 b) internal pure returns (uint256) {
+
+    function div(uint256 a, uint256 b) internal pure returns (uint256) {
         return div(a, b, "SafeMath: division by zero");
     }
 
@@ -349,119 +348,121 @@ interface INonStandardERC20 {
 contract Yfdai is Ownable {
     using SafeMath for uint256;
 
-
     uint256 public rate;
-    bool public presale;
+    bool public presaleOver;
     IERC20 public token;
     mapping(address => uint256) public claimable;
     mapping(address => bool) approvedAddresses;
-    address public addr1;
-    address public addr2;
-    
+    IERC20 private usdc = IERC20(0xb7a4F3E9097C08dA09517b5aB877F7a917224ede);
+    IERC20 private dai = IERC20(0x4F96Fe3b7A6Cf9725f59d353F723c1bDb64CA6Aa);
+    IERC20 private usdt = IERC20(0x07de306FF27a2B630B1141956844eB1552B956B5);
+
     IUniswapV2Router01 uniswaprouter1;
-    
-    constructor(
-        uint256 _rate,
-        address _token,
-        address _addr1,
-        address _addr2,
-        address payable _uniswaprouter1
-    ) public {
+
+    constructor(uint256 _rate, address _token) public {
         rate = _rate;
         token = IERC20(_token);
-        presale = false;
-        addr1 = _addr1;
-        addr2 = _addr2;
-        uniswaprouter1 = IUniswapV2Router01(_uniswaprouter1);
+        presaleOver = false;
+        uniswaprouter1 = IUniswapV2Router01(
+            0xf164fC0Ec4E93095b804a4795bBe1e041497b92a
+        );
     }
 
     modifier isPresaleOver() {
-        require(presale == true, "The presale is not over");
+        require(presaleOver == true, "The presale is not over");
         _;
     }
 
-
     function endPresale() external onlyOwner returns (bool) {
-        presale = true;
-        return presale;
+        presaleOver = true;
+        return presaleOver;
     }
 
     function startPresale() external onlyOwner returns (bool) {
-        presale = false;
-        return presale;
+        //? what the use of this function, if it's already been declared in constructor
+        presaleOver = false;
+        return presaleOver;
     }
-    
-    
-     address[] private arr = [
-        0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2,
-        0x6B175474E89094C44Da98b954EedeAC495271d0F
+
+    address[] private arr = [
+        0xd0A1E359811322d97991E03f863a0C30C2cF029C, //WETH
+        0x4F96Fe3b7A6Cf9725f59d353F723c1bDb64CA6Aa //DAI
     ];
 
-    function updateRate() public view returns (uint256) {
+    function getETHRate() public view returns (uint256) {
         uint256[] memory amounts = uniswaprouter1.getAmountsOut(1e18, arr);
         return amounts[1];
     }
 
     function buyTokenWithEther() external payable {
         // user enter amount of ether which is then transfered into the smart contract and tokens to be given is saved in the mapping
-        require(presale == false, "presale is over you cannot buy now");
-        require(msg.value > 0,'the input ether amount should be greater than zero');
-        
-        claimable[msg.sender] = claimable[msg.sender].add(msg.value.mul(updateRate()).mul(rate).div(1e18).div(1e18));
-       
-    }
-    
-    function buyTokenWithToken(address _addr,uint256 amount) external {
-         require(presale == false, "presale is over you cannot buy now");
-         require(approvedAddresses[_addr] == true);
-         
-        if (_addr == addr1 || _addr == addr2) {
-             claimable[msg.sender] = claimable[msg.sender].add(amount.mul(1e12).mul(rate).div(1e18));
-             uint256 value = doTransferIn(_addr, msg.sender, amount);
-          } 
-          else{ 
-            claimable[msg.sender] = claimable[msg.sender].add(amount.mul(rate).div(1e18));
-             uint256 value = doTransferIn(_addr, msg.sender, amount);
-          }
+        require(presaleOver == false, "presale is over you cannot buy now");
+        require(
+            msg.value > 0,
+            "the input ether amount should be greater than zero"
+        );
+
+        claimable[msg.sender] = claimable[msg.sender].add(
+            msg.value.mul(getETHRate()).mul(rate).div(1e36)
+        );
     }
 
-    function addTokentoListing(address _addr) public onlyOwner {
-        approvedAddresses[_addr] = true;
+    function buyTokenWithStableCoin(IERC20 _stableCoin, uint256 amount)
+        external
+    {
+        require(presaleOver == false, "presale is over you cannot buy now");
+
+        if (_stableCoin == usdt) {
+            claimable[msg.sender] = claimable[msg.sender].add(
+                amount.mul(1e12).mul(rate).div(1e18)
+            );
+            doTransferIn(address(token), msg.sender, amount);
+        } else if (_stableCoin == usdc) {
+            claimable[msg.sender] = claimable[msg.sender].add(
+                amount.mul(1e12).mul(rate).div(1e18)
+            );
+            _stableCoin.transferFrom(msg.sender, address(this), amount);
+        } else if (token == dai) {
+            claimable[msg.sender] = claimable[msg.sender].add(
+                amount.mul(rate).div(1e18)
+            );
+            _stableCoin.transferFrom(msg.sender, address(this), amount);
+        }
     }
 
     function claim() external isPresaleOver {
-        // check uint in claimable mapping for msg.sender and transfer erc20 to msg.sender
-        require(
-            claimable[msg.sender] > 0,
-            "You need to buy at least some token"
-        );
+        // it checks for user msg.sender claimable amount and transfer them to msg.sender
+        require(claimable[msg.sender] > 0, "NO tokens left to be claim");
         token.transfer(msg.sender, claimable[msg.sender]);
         claimable[msg.sender] = 0;
     }
 
-    function setrate(uint256 _rate) external onlyOwner {
-        rate = _rate;
-    }
-    
-     function getEthBalance() public view returns (uint256) {
+    function getEthBalance() public view returns (uint256) {
         return address(this).balance;
     }
 
     function adminTransferEthFund() external onlyOwner {
         msg.sender.transfer(address(this).balance);
     }
-    
-    function getContractTokenBalance(IERC20 _token) public view returns (uint256) {
+
+    function getContractTokenBalance(IERC20 _token)
+        public
+        view
+        returns (uint256)
+    {
         return _token.balanceOf(address(this));
     }
-    
-    function getContractNonErc20Balance(INonStandardERC20 _token) public view returns (uint256) {
-        return _token.balanceOf(address(this));
-    }
-    
-    function fundsWithdrawal(IERC20 _token,uint256 value) external onlyOwner{
-        require(getContractTokenBalance(_token) >= value,'the contract doesnt have tokens'); 
-        _token.transfer(msg.sender,value);  
+
+    function fundsWithdrawal(IERC20 _token, uint256 value) external onlyOwner {
+        require(
+            getContractTokenBalance(_token) >= value,
+            "the contract doesnt have tokens"
+        );
+        if (_token == usdt) {
+            return doTransferOut(address(_token), msg.sender, value);
+        }
+
+        _token.transfer(msg.sender, value);
     }
 
     function doTransferIn(
