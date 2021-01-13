@@ -18,6 +18,8 @@ $chrome-yellow: #a87119;
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
+  position:relative;
+  bottom:170px;
   .box1 {
     background-color: $dark-blue;
     width: 350px;

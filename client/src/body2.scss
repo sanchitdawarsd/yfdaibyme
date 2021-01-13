@@ -20,7 +20,8 @@ $chrome-yellow: #a87119;
     justify-content: center;
     padding: 1.5rem;
     flex-wrap: wrap;
-  
+  position: relative;
+  bottom:170px;
     border-collapse: separate;
     border-spacing: 15px;
     .box1 {
